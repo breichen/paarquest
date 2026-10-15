@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "115906227809",
+    "project_id": "paarquest",
+    "storage_bucket": "paarquest.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:115906227809:android:5b5ffea6d12f9d07970420",
+        "android_client_info": {
+          "package_name": "com.example.paarquest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDP3Glf6HzCTqJCQQwkablbEh0SSv3GP4I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
