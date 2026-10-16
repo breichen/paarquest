@@ -6,15 +6,15 @@ import 'widgets.dart';
 
 class SendPage extends StatefulWidget {
   final TemplateStore store;
-  final Future<bool> Function(
-      String title, String description, String category, int coins, int hours) onSend;
+  final Future<bool> Function(String title, String description, String category,
+      int coins, int hours) onSend;
   const SendPage({super.key, required this.store, required this.onSend});
   @override
   State<SendPage> createState() => _SendPageState();
 }
 
 class _SendPageState extends State<SendPage> {
-  String category = categories.first;
+  TaskCategory category = TaskCategory.values.first;
   final title = TextEditingController();
   final description = TextEditingController();
   final coins = TextEditingController(text: '10');
@@ -23,7 +23,8 @@ class _SendPageState extends State<SendPage> {
 
   void snack(String msg) => ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(msg), behavior: SnackBarBehavior.floating));
+    ..showSnackBar(
+        SnackBar(content: Text(msg), behavior: SnackBarBehavior.floating));
 
   Future<void> pickTemplate() async {
     final t = await Navigator.push<Tpl>(
@@ -50,11 +51,12 @@ class _SendPageState extends State<SendPage> {
     final candidate = Tpl(ti, category, c, hours, description.text.trim());
 
     setState(() => sending = true);
-    final ok = await widget.onSend(
-        candidate.title, candidate.description, candidate.category, candidate.coins, candidate.hours);
+    final ok = await widget.onSend(candidate.title, candidate.description,
+        candidate.category.name, candidate.coins, candidate.hours);
     if (!mounted) return;
     setState(() => sending = false);
-    if (!ok) return; // Fehlermeldung zeigt die Home-Seite, Eingaben bleiben erhalten
+    if (!ok)
+      return; // Fehlermeldung zeigt die Home-Seite, Eingaben bleiben erhalten
 
     title.clear();
     description.clear();
@@ -71,7 +73,9 @@ class _SendPageState extends State<SendPage> {
             ? 'In deiner Liste gibt es schon „$ti", aber mit anderen Angaben. Soll die gespeicherte Version ersetzt werden?'
             : '„$ti" ist noch nicht in deiner Liste. Auf diesem Gerät speichern?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Nein')),
+          TextButton(
+              onPressed: () => Navigator.pop(c, false),
+              child: const Text('Nein')),
           FilledButton(
               onPressed: () => Navigator.pop(c, true),
               child: Text(replace ? 'Ersetzen' : 'Speichern')),
@@ -90,7 +94,8 @@ class _SendPageState extends State<SendPage> {
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
-        Text('Aufgabe für $partner', style: Theme.of(context).textTheme.titleLarge),
+        Text('Aufgabe für $partner',
+            style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 10),
         OutlinedButton.icon(
           onPressed: pickTemplate,
@@ -98,24 +103,25 @@ class _SendPageState extends State<SendPage> {
           label: const Text('Aus Liste wählen'),
         ),
         const SizedBox(height: 14),
-        DropdownButtonFormField<String>(
+        DropdownButtonFormField<TaskCategory>(
           value: category,
           decoration: fill.copyWith(labelText: 'Kategorie'),
           items: [
-            for (final c in categories)
+            for (final c in TaskCategory.values)
               DropdownMenuItem(
                 value: c,
                 child: Row(children: [
                   Icon(categoryIcons[c], size: 18),
                   const SizedBox(width: 8),
-                  Text(c),
+                  Text(categoryNames[c] ?? c.name),
                 ]),
               ),
           ],
           onChanged: (v) => setState(() => category = v ?? category),
         ),
         const SizedBox(height: 10),
-        TextField(controller: title, decoration: fill.copyWith(labelText: 'Titel')),
+        TextField(
+            controller: title, decoration: fill.copyWith(labelText: 'Titel')),
         const SizedBox(height: 10),
         TextField(
           controller: description,
@@ -134,14 +140,18 @@ class _SendPageState extends State<SendPage> {
             ),
           ),
           const SizedBox(width: 10),
-          Expanded(child: HoursDropdown(value: hours, onChanged: (v) => setState(() => hours = v))),
+          Expanded(
+              child: HoursDropdown(
+                  value: hours, onChanged: (v) => setState(() => hours = v))),
         ]),
         const SizedBox(height: 16),
         FilledButton.icon(
           onPressed: sending ? null : submit,
           icon: sending
               ? const SizedBox(
-                  width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2))
               : const Icon(Icons.send),
           label: Text(sending ? 'Wird gesendet …' : 'An $partner schicken'),
         ),
@@ -159,7 +169,7 @@ class TemplatePicker extends StatefulWidget {
 }
 
 class _TemplatePickerState extends State<TemplatePicker> {
-  String? category; // null = alle
+  TaskCategory? category; // null = alle
 
   Future<void> manage(Tpl t) async {
     final action = await showModalBottomSheet<String>(
@@ -167,7 +177,9 @@ class _TemplatePickerState extends State<TemplatePicker> {
       showDragHandle: true,
       builder: (c) => SafeArea(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          ListTile(title: Text(t.title, style: const TextStyle(fontWeight: FontWeight.bold))),
+          ListTile(
+              title: Text(t.title,
+                  style: const TextStyle(fontWeight: FontWeight.bold))),
           ListTile(
             leading: const Icon(Icons.edit),
             title: const Text('Ändern'),
@@ -193,10 +205,15 @@ class _TemplatePickerState extends State<TemplatePicker> {
         context: context,
         builder: (c) => AlertDialog(
           title: const Text('Aufgabe löschen?'),
-          content: Text('„${t.title}“ verschwindet nur auf diesem Gerät aus deiner Liste.'),
+          content: Text(
+              '„${t.title}“ verschwindet nur auf diesem Gerät aus deiner Liste.'),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Abbrechen')),
-            FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Löschen')),
+            TextButton(
+                onPressed: () => Navigator.pop(c, false),
+                child: const Text('Abbrechen')),
+            FilledButton(
+                onPressed: () => Navigator.pop(c, true),
+                child: const Text('Löschen')),
           ],
         ),
       );
@@ -230,7 +247,8 @@ class _TemplatePickerState extends State<TemplatePicker> {
                 height: 52,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(right: 8),
@@ -240,12 +258,12 @@ class _TemplatePickerState extends State<TemplatePicker> {
                         onSelected: (_) => setState(() => category = null),
                       ),
                     ),
-                    for (final c in categories)
+                    for (final c in TaskCategory.values)
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: ChoiceChip(
                           avatar: Icon(categoryIcons[c], size: 16),
-                          label: Text(c),
+                          label: Text(categoryNames[c] ?? c.name),
                           selected: category == c,
                           onSelected: (_) => setState(() => category = c),
                         ),
@@ -255,7 +273,8 @@ class _TemplatePickerState extends State<TemplatePicker> {
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
-                child: Text('Lange drücken zum Ändern oder Löschen. Gilt nur für dieses Gerät.',
+                child: Text(
+                    'Lange drücken zum Ändern oder Löschen. Gilt nur für dieses Gerät.',
                     style: Theme.of(context).textTheme.bodySmall),
               ),
               Expanded(
@@ -274,17 +293,22 @@ class _TemplatePickerState extends State<TemplatePicker> {
                           const Icon(Icons.bookmark, size: 14),
                         ],
                       ]),
-                      subtitle: Text(t.description, maxLines: 2, overflow: TextOverflow.ellipsis),
+                      subtitle: Text(t.description,
+                          maxLines: 2, overflow: TextOverflow.ellipsis),
                       trailing: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Row(mainAxisSize: MainAxisSize.min, children: [
-                            const Icon(Icons.monetization_on, color: coinGold, size: 16),
+                            const Icon(Icons.monetization_on,
+                                color: coinGold, size: 16),
                             const SizedBox(width: 2),
-                            Text('${t.coins}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                            Text('${t.coins}',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold)),
                           ]),
-                          Text(hoursLabel(t.hours), style: Theme.of(context).textTheme.bodySmall),
+                          Text(hoursLabel(t.hours),
+                              style: Theme.of(context).textTheme.bodySmall),
                         ],
                       ),
                       onTap: () => Navigator.pop(context, t),
@@ -307,7 +331,7 @@ class TemplateEditDialog extends StatefulWidget {
 }
 
 class _TemplateEditDialogState extends State<TemplateEditDialog> {
-  late String category = widget.tpl.category;
+  late TaskCategory category = widget.tpl.category;
   late final title = TextEditingController(text: widget.tpl.title);
   late final description = TextEditingController(text: widget.tpl.description);
   late final coins = TextEditingController(text: '${widget.tpl.coins}');
@@ -318,14 +342,20 @@ class _TemplateEditDialogState extends State<TemplateEditDialog> {
         title: const Text('Aufgabe ändern'),
         content: SingleChildScrollView(
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            DropdownButtonFormField<String>(
-              value: categories.contains(category) ? category : null,
+            DropdownButtonFormField<TaskCategory>(
+              value: category,
               isExpanded: true,
               decoration: const InputDecoration(labelText: 'Kategorie'),
-              items: [for (final c in categories) DropdownMenuItem(value: c, child: Text(c))],
+              items: [
+                for (final c in TaskCategory.values)
+                  DropdownMenuItem(
+                      value: c, child: Text(categoryNames[c] ?? c.name)),
+              ],
               onChanged: (v) => setState(() => category = v ?? category),
             ),
-            TextField(controller: title, decoration: const InputDecoration(labelText: 'Titel')),
+            TextField(
+                controller: title,
+                decoration: const InputDecoration(labelText: 'Titel')),
             TextField(
               controller: description,
               minLines: 2,
@@ -338,17 +368,21 @@ class _TemplateEditDialogState extends State<TemplateEditDialog> {
               decoration: const InputDecoration(labelText: 'Münzen'),
             ),
             const SizedBox(height: 8),
-            HoursDropdown(value: hours, onChanged: (v) => setState(() => hours = v)),
+            HoursDropdown(
+                value: hours, onChanged: (v) => setState(() => hours = v)),
           ]),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Abbrechen')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Abbrechen')),
           FilledButton(
             onPressed: () {
               final c = int.tryParse(coins.text.trim());
               final t = title.text.trim();
               if (t.isEmpty || c == null || c < 0) return;
-              Navigator.pop(context, Tpl(t, category, c, hours, description.text.trim()));
+              Navigator.pop(
+                  context, Tpl(t, category, c, hours, description.text.trim()));
             },
             child: const Text('Speichern'),
           ),

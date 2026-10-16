@@ -2,34 +2,49 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const categories = [
-  'Romantik',
-  'Essen',
-  'Abenteuer',
-  'Spaß & Spiel',
-  'Wellness',
-  'Intimität',
-  'Verführung',
-  'Alltag',
-  'Sex',
-];
+enum TaskCategory {
+  ALLTAG,
+  ESSEN,
+  ABENTEUER,
+  SPASS,
+  WELLNESS,
+  ROMANTIK,
+  INTIMITAET,
+  VERFUEHRUNG,
+  SEX
+}
 
-const categoryIcons = <String, IconData>{
-  'Romantik': Icons.favorite,
-  'Essen': Icons.restaurant,
-  'Abenteuer': Icons.explore,
-  'Spaß & Spiel': Icons.sports_esports,
-  'Wellness': Icons.spa,
-  'Intimität': Icons.favorite_border,
-  'Verführung': Icons.whatshot,
-  'Alltag': Icons.home,
-  'Sex': Icons.local_fire_department,
+Map<TaskCategory, String> categoryNames = {
+  TaskCategory.ALLTAG: "Alltag",
+  TaskCategory.ESSEN: "Essen & Trinken",
+  TaskCategory.ABENTEUER: "Abenteuer",
+  TaskCategory.SPASS: "Spaß & Spiel",
+  TaskCategory.WELLNESS: "Wellness",
+  TaskCategory.ROMANTIK: "Romantik",
+  TaskCategory.INTIMITAET: "Intimität",
+  TaskCategory.VERFUEHRUNG: "Verführung",
+  TaskCategory.SEX: "Sex",
+};
+
+const categoryIcons = <TaskCategory, IconData>{
+  TaskCategory.ROMANTIK: Icons.favorite,
+  TaskCategory.ESSEN: Icons.restaurant,
+  TaskCategory.ABENTEUER: Icons.explore,
+  TaskCategory.SPASS: Icons.sports_esports,
+  TaskCategory.WELLNESS: Icons.spa,
+  TaskCategory.INTIMITAET: Icons.favorite_border,
+  TaskCategory.VERFUEHRUNG: Icons.whatshot,
+  TaskCategory.ALLTAG: Icons.home,
+  TaskCategory.SEX: Icons.local_fire_department,
 };
 
 class Tpl {
-  final String title, category, description;
+  final String title;
+  final TaskCategory category;
+  final String description;
   final int coins, hours;
-  const Tpl(this.title, this.category, this.coins, this.hours, this.description);
+  const Tpl(
+      this.title, this.category, this.coins, this.hours, this.description);
 
   bool same(Tpl o) =>
       title == o.title &&
@@ -40,96 +55,115 @@ class Tpl {
 
   Map<String, dynamic> toJson() => {
         'title': title,
-        'category': category,
+        'category': category.name,
         'coins': coins,
         'hours': hours,
         'description': description,
       };
 
-  factory Tpl.fromJson(Map<String, dynamic> j) =>
-      Tpl(j['title'], j['category'], j['coins'], j['hours'], j['description'] ?? '');
+  factory Tpl.fromJson(Map<String, dynamic> j) => Tpl(
+      j['title'],
+      TaskCategory.values.byName(j['category'] as String),
+      j['coins'],
+      j['hours'],
+      j['description'] ?? '');
 }
 
-// Beschreibungen sind an den Empfänger gerichtet ("du"), "mich/uns" ist der Absender.
 const builtInTemplates = <Tpl>[
   // Romantik
-  Tpl('Versteckte Liebesnotiz', 'Romantik', 5, 24,
+  Tpl('Versteckte Liebesnotiz', TaskCategory.ROMANTIK, 5, 24,
       'Versteck irgendwo eine kleine Nachricht für mich, die ich heute finde.'),
-  Tpl('Kuscheln ohne Handy', 'Romantik', 10, 24,
+  Tpl('Kuscheln ohne Handy', TaskCategory.ROMANTIK, 10, 24,
       'Eine Stunde nur wir zwei, ohne Handy und ohne Ablenkung.'),
-  Tpl('Liebesbrief schreiben', 'Romantik', 15, 72,
+  Tpl('Gemeinsames Bad', TaskCategory.ROMANTIK, 10, 48,
+      'Bereite ein gemeinsames Bad in der Badewanne mit Rotwein und Kerzenschein vor.'),
+  Tpl('Liebesbrief schreiben', TaskCategory.ROMANTIK, 15, 72,
       'Schreib mir einen handgeschriebenen Brief, in dem du sagst, was du an mir liebst.'),
-  Tpl('Kleines Geschenk besorgen', 'Romantik', 15, 72,
+  Tpl('Kleines Geschenk besorgen', TaskCategory.ROMANTIK, 15, 72,
       'Bring mir eine Kleinigkeit mit, bei der du an mich gedacht hast.'),
-  Tpl('Date-Abend planen', 'Romantik', 25, 168,
+  Tpl('Date-Abend planen', TaskCategory.ROMANTIK, 25, 168,
       'Plane einen Abend nur für uns. Ort, Essen und Programm sind deine Überraschung.'),
-  // Essen
-  Tpl('Frühstück ans Bett bringen', 'Essen', 15, 48,
+
+  // Essen & Trinken
+  Tpl('Frühstück ans Bett bringen', TaskCategory.ESSEN, 15, 48,
       'Weck mich mit einem liebevoll gemachten Frühstück.'),
-  Tpl('Neues Rezept ausprobieren', 'Essen', 15, 168,
+  Tpl('Cocktail zubereiten', TaskCategory.ESSEN, 15, 48,
+      'Mach uns beiden einen leckeren Cocktail.'),
+  Tpl('Neues Rezept ausprobieren', TaskCategory.ESSEN, 15, 168,
       'Such ein Rezept aus, das wir noch nie hatten, und koch es für uns.'),
-  Tpl('Mein Leibgericht kochen', 'Essen', 20, 72,
+  Tpl('Mein Leibgericht kochen', TaskCategory.ESSEN, 20, 72,
       'Koch mein Lieblingsessen, so gut du kannst.'),
-  Tpl('Picknick vorbereiten', 'Essen', 20, 168,
+  Tpl('Picknick vorbereiten', TaskCategory.ESSEN, 20, 168,
       'Pack einen Korb mit Leckereien und such einen schönen Platz für uns aus.'),
+
   // Abenteuer
-  Tpl('Neuen Ort entdecken', 'Abenteuer', 20, 168,
+  Tpl('Neuen Ort entdecken', TaskCategory.ABENTEUER, 20, 168,
       'Finde einen Ort in der Nähe, an dem wir noch nie waren, und nimm mich mit.'),
-  Tpl('Etwas Neues ausprobieren', 'Abenteuer', 25, 336,
+  Tpl('Etwas Neues ausprobieren', TaskCategory.ABENTEUER, 25, 336,
       'Such eine Aktivität aus, die wir beide noch nie gemacht haben.'),
-  Tpl('Spontaner Ausflug', 'Abenteuer', 30, 168,
+  Tpl('Spontaner Ausflug', TaskCategory.ABENTEUER, 30, 168,
       'Plane einen spontanen Ausflug.'),
-  Tpl('Überraschungsausflug', 'Abenteuer', 40, 336,
+  Tpl('Überraschungsausflug', TaskCategory.ABENTEUER, 40, 336,
       'Organisiere einen Ausflug und verrate mir vorher nur, was ich einpacken soll.'),
+
   // Spaß & Spiel
-  Tpl('Bring mich zum Lachen', 'Spaß & Spiel', 5, 24,
+  Tpl('Bring mich zum Lachen', TaskCategory.SPASS, 5, 24,
       'Bring mich heute zum Lachen.'),
-  Tpl('Lustige Challenge erfinden', 'Spaß & Spiel', 10, 72,
+  Tpl('Lustige Challenge erfinden', TaskCategory.SPASS, 10, 72,
       'Erfinde eine lustige Challenge für uns.'),
-  Tpl('Spieleabend organisieren', 'Spaß & Spiel', 15, 168,
+  Tpl('Spieleabend organisieren', TaskCategory.SPASS, 15, 168,
       'Such Spiele aus und sorg für Snacks. Wer verliert, bekommt eine kleine Strafe.'),
+
   // Wellness
-  Tpl('Fußmassage', 'Wellness', 10, 24,
+  Tpl('Fußmassage', TaskCategory.WELLNESS, 10, 24,
       'Massiere mir die Füße, ganz in Ruhe.'),
-  Tpl('Gemeinsamer Spaziergang', 'Wellness', 10, 72,
+  Tpl('Gemeinsamer Spaziergang', TaskCategory.WELLNESS, 10, 72,
       'Lass uns gemeinsam einen Spaziergang machen, ohne Eile und ohne Handy.'),
-  Tpl('Massage', 'Wellness', 20, 48,
+  Tpl('Massage', TaskCategory.WELLNESS, 20, 48,
       'Gib mir eine Massage, gern mit Öl und ohne Zeitdruck.'),
-  Tpl('Entspannter Abend', 'Wellness', 20, 72,
+  Tpl('Entspannter Abend', TaskCategory.WELLNESS, 20, 72,
       'Bereite mir einen entspannten Abend vor.'),
+
   // Intimität
-  Tpl('Die lange aufgesparte Frage', 'Intimität', 10, 72,
+  Tpl('Die lange aufgesparte Frage', TaskCategory.INTIMITAET, 10, 72,
       'Stelle mir eine Frage, die du mir schon lange stellen wolltest.'),
-  Tpl('Glücklicher Moment', 'Intimität', 10, 72,
+  Tpl('Glücklicher Moment', TaskCategory.INTIMITAET, 10, 72,
       'Erzähl mir von einem Moment, in dem du besonders glücklich mit mir warst.'),
-  Tpl('Gemeinsam träumen', 'Intimität', 10, 72,
+  Tpl('Gemeinsam träumen', TaskCategory.INTIMITAET, 10, 72,
       'Erzähl mir von einem Wunsch für unsere Zukunft und frag mich nach meinem.'),
+
   // Verführung
-  Tpl('Heiße Nachricht', 'Verführung', 10, 24,
+  Tpl('Heiße Nachricht', TaskCategory.VERFUEHRUNG, 10, 24,
       'Schick mir eine heiße Nachricht.'),
-  Tpl('Flirten wie am Anfang', 'Verführung', 15, 48,
+  Tpl('Flirten wie am Anfang', TaskCategory.VERFUEHRUNG, 15, 48,
       'Flirte heute mit mir, als würden wir uns gerade erst kennenlernen.'),
-  Tpl('Verführerisches Outfit', 'Verführung', 25, 72,
+  Tpl('Verführerisches Outfit', TaskCategory.VERFUEHRUNG, 25, 72,
       'Überrasch mich mit einem Outfit, das mich sprachlos macht.'),
+
   // Alltag
-  Tpl('Abwasch übernehmen', 'Alltag', 5, 24,
+  Tpl('Abwasch übernehmen', TaskCategory.ALLTAG, 5, 24,
       'Übernimm heute den Abwasch.'),
-  Tpl('Wäsche komplett erledigen', 'Alltag', 10, 48,
+  Tpl('Wäsche komplett erledigen', TaskCategory.ALLTAG, 10, 48,
       'Wasch, trockne und leg die Wäsche zusammen.'),
-  Tpl('Wohnung aufräumen', 'Alltag', 15, 48,
+  Tpl('Wohnung aufräumen', TaskCategory.ALLTAG, 15, 48,
       'Bring die Wohnung in einen Zustand, in dem wir uns beide wohlfühlen.'),
+
   // Sex
-  Tpl('Eine Fantasie erzählen', 'Sex', 15, 72,
+  Tpl('Eine Fantasie erzählen', TaskCategory.SEX, 15, 72,
       'Erzähl mir von einer Fantasie, die du schon länger hast.'),
-  Tpl('Sinnliche Massage', 'Sex', 20, 48,
+  Tpl('Sinnliche Massage', TaskCategory.SEX, 20, 48,
       'Verwöhn mich mit einer langen, sinnlichen Massage.'),
-  Tpl('Überraschung im Schlafzimmer', 'Sex', 30, 168,
+  Tpl('Überraschung im Schlafzimmer', TaskCategory.SEX, 30, 168,
       'Überrasch mich im Schlafzimmer mit etwas, das ich nicht erwarte.'),
 ];
 
 int compareTpl(Tpl a, Tpl b) {
-  final c = categories.indexOf(a.category).compareTo(categories.indexOf(b.category));
+  final c = TaskCategory.values
+      .indexOf(a.category)
+      .compareTo(TaskCategory.values.indexOf(b.category));
+
   if (c != 0) return c;
+
   final k = a.coins.compareTo(b.coins);
   return k != 0 ? k : a.title.compareTo(b.title);
 }
@@ -164,18 +198,21 @@ class TemplateStore extends ChangeNotifier {
     await p.setStringList(_hiddenKey, hidden.toList());
   }
 
-  bool _isBuiltIn(String title) => builtInTemplates.any((b) => b.title == title);
+  bool _isBuiltIn(String title) =>
+      builtInTemplates.any((b) => b.title == title);
 
   List<Tpl> get all {
     final titles = saved.map((t) => t.title).toSet();
     return [
-      ...builtInTemplates.where((t) => !titles.contains(t.title) && !hidden.contains(t.title)),
+      ...builtInTemplates
+          .where((t) => !titles.contains(t.title) && !hidden.contains(t.title)),
       ...saved,
     ];
   }
 
-  List<Tpl> forCategory(String? category) {
-    final l = all.where((t) => category == null || t.category == category).toList();
+  List<Tpl> forCategory(TaskCategory? category) {
+    final l =
+        all.where((t) => category == null || t.category == category).toList();
     l.sort(compareTpl);
     return l;
   }
@@ -208,7 +245,8 @@ class TemplateStore extends ChangeNotifier {
 
   Future<void> update(Tpl old, Tpl updated) async {
     saved.removeWhere((s) => s.title == old.title);
-    if (_isBuiltIn(old.title) && old.title != updated.title) hidden.add(old.title);
+    if (_isBuiltIn(old.title) && old.title != updated.title)
+      hidden.add(old.title);
     saved.removeWhere((s) => s.title == updated.title);
     saved.add(updated);
     hidden.remove(updated.title);
