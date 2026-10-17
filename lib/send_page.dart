@@ -21,6 +21,39 @@ class _SendPageState extends State<SendPage> {
   int hours = 48;
   bool sending = false;
 
+  @override
+  void initState() {
+    super.initState();
+    // Damit der Leeren-Knopf sofort auf Eingaben reagiert
+    for (final c in [title, description, coins]) {
+      c.addListener(() => setState(() {}));
+    }
+  }
+
+  @override
+  void dispose() {
+    title.dispose();
+    description.dispose();
+    coins.dispose();
+    super.dispose();
+  }
+
+  /// true, sobald irgendein Feld vom Ausgangszustand abweicht.
+  bool get hasInput =>
+      title.text.isNotEmpty ||
+      description.text.isNotEmpty ||
+      coins.text.trim() != '10' ||
+      hours != 48 ||
+      category != TaskCategory.values.first;
+
+  void clearFields() => setState(() {
+        category = TaskCategory.values.first;
+        title.clear();
+        description.clear();
+        coins.text = '10';
+        hours = 48;
+      });
+
   void snack(String msg) => ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
     ..showSnackBar(
@@ -97,11 +130,21 @@ class _SendPageState extends State<SendPage> {
         Text('Aufgabe für $partner',
             style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 10),
-        OutlinedButton.icon(
-          onPressed: pickTemplate,
-          icon: const Icon(Icons.list_alt),
-          label: const Text('Aus Liste wählen'),
-        ),
+        Row(children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: pickTemplate,
+              icon: const Icon(Icons.list_alt),
+              label: const Text('Aus Liste wählen'),
+            ),
+          ),
+          const SizedBox(width: 10),
+          OutlinedButton.icon(
+            onPressed: hasInput ? clearFields : null,
+            icon: const Icon(Icons.layers_clear),
+            label: const Text('Leeren'),
+          ),
+        ]),
         const SizedBox(height: 14),
         DropdownButtonFormField<TaskCategory>(
           value: category,
