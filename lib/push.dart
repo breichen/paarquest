@@ -6,11 +6,13 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'firebase_options.dart'; // wird von `flutterfire configure` erzeugt
+import 'web_push.dart';
 
 /// Android: echte Pushes über Firebase (auch bei geschlossener App).
 /// iOS: kein Firebase. Die App zeigt Benachrichtigungen selbst an, solange sie
 /// läuft (siehe `inApp` und die Auswertung der Live-Daten in main.dart).
-/// Web: ebenfalls ohne Firebase; Meldungen erscheinen als Banner in der App.
+/// Web: Bei offener App erscheinen Meldungen als Banner (Live-Daten), bei
+/// geschlossener App kommen Web-Pushes über Firebase (web/push.js).
 class Push {
   static final _local = FlutterLocalNotificationsPlugin();
   static const _channel = AndroidNotificationChannel(
@@ -28,7 +30,11 @@ class Push {
   static final messengerKey = GlobalKey<ScaffoldMessengerState>();
 
   static Future<void> init(String userName) async {
-    if (kIsWeb) return; // Browser: keine System-Benachrichtigungen
+    _user = userName;
+    if (kIsWeb) {
+      _refreshWebToken(); // nicht abwarten, der Start soll nicht hängen
+      return;
+    }
     try {
       await _local.initialize(const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
@@ -67,6 +73,28 @@ class Push {
       // Die App soll auch ohne funktionierende Pushes starten.
       debugPrint('Push-Initialisierung fehlgeschlagen: $e');
     }
+  }
+
+  static String _user = '';
+
+  /// Browser: Token beim Start auffrischen, falls Benachrichtigungen erlaubt sind.
+  static Future<void> _refreshWebToken() async {
+    try {
+      final token = await webPushToken();
+      if (token.isNotEmpty) await saveToken(token, platform: 'web');
+    } catch (e) {
+      debugPrint('Web-Push-Token speichern fehlgeschlagen: $e');
+    }
+  }
+
+  /// Speichert ein Gerät (Token) für diese Person; pro Person sind mehrere möglich.
+  static Future<void> saveToken(String token, {required String platform}) async {
+    await Supabase.instance.client.from('device_tokens').upsert({
+      'user_name': _user,
+      'token': token,
+      'platform': platform,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    }, onConflict: 'token');
   }
 
   static Future<void> show(String title, String body) async {

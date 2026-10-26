@@ -91,3 +91,28 @@ Gut zu wissen:
 - Erledigte, abgelehnte, verworfene und abgebrochene Aufgaben haben im Reiter „Erledigt" einen Löschen-Knopf. Die Aufgabe verschwindet nur auf diesem Gerät (Merkliste in shared_preferences). In Supabase bleibt sie, der Partner sieht sie weiter, Münzen und Übersicht zählen sie mit. Laufende Aufgaben werden erst abgebrochen oder abgelehnt und können dann gelöscht werden.
 - In der Aufgabenauswahl öffnet langes Drücken ein Menü mit Ändern und Löschen, auch bei eingebauten Aufgaben. Oben erscheint ein Knopf, der gelöschte Standard-Aufgaben wiederherstellt.
 - Bereits abgeschickte Aufgaben lassen sich nicht nachträglich ändern. Dafür gibt es den Gegenvorschlag bei Münzen und Zeit.
+
+## Web-Version mit Push (Browser)
+
+Die Web-Version wird über `D:\Websites\unsere-apps\build_all.ps1` gebaut (siehe README dort).
+Im Browser kommen Pushes über Firebase, auch wenn die App geschlossen ist.
+Jede Person kann so mehrere Geräte haben (Android-App und Browser).
+
+Einmalig, **in dieser Reihenfolge**:
+
+1. **notify-Funktion aktualisieren.**
+   Den Inhalt von `supabase/functions/notify/index.ts` übernehmen, und zwar auf einem der beiden Wege:
+   - Supabase Dashboard → Edge Functions → `notify` → Code: alles ersetzen und **Deploy** klicken.
+   - Oder: `supabase functions deploy notify`.
+
+   Die neue Funktion schickt an alle Geräte der Person und löscht Geräte, die es nicht mehr gibt.
+   Sie funktioniert auch schon mit der alten Tabelle.
+2. **SQL:** `supabase_update_web_push.sql` im SQL Editor ausführen.
+   Danach sind mehrere Geräte pro Person möglich (Spalte `platform`: `android` oder `web`).
+3. **Web-App bauen und hochladen:** `.\build_all.ps1 -Only paarquest`, dann committen und pushen.
+4. **Im Browser:** PaarQuest öffnen und in der Karte oben auf **Aktivieren** tippen, dann die Erlaubnis bestätigen.
+   - iPhone: Das geht erst, wenn die Web-App über „Zum Home-Bildschirm“ installiert ist (ab iOS 16.4).
+   - Prüfen: In der Tabelle `device_tokens` erscheint eine Zeile mit `platform = web`.
+
+Die Firebase-Werte für das Web stehen in `web/push_config.js` (Firebase-Web-App „paarquest (web)“).
+Der Service Worker ist `web/firebase-messaging-sw.js`.

@@ -11,6 +11,7 @@ import 'send_page.dart';
 import 'shop_page.dart';
 import 'task_templates.dart';
 import 'tasks_page.dart';
+import 'web_push_card.dart';
 import 'widgets.dart';
 
 Future<void> main() async {
@@ -264,10 +265,15 @@ class _HomeState extends State<Home> {
               ),
             )
           // IndexedStack erhält z. B. halb ausgefüllte Eingaben beim Tab-Wechsel
-          : IndexedStack(index: tab, children: [
-              TasksPage(tasks: tasks, hidden: hidden.ids, actions: actions),
-              SendPage(store: store, onSend: send),
-              ShopPage(coins: balance(me), purchases: purchases, onBuy: buy, onFulfill: fulfill),
+          : Column(children: [
+              const WebPushCard(), // nur im Browser, solange noch nicht gefragt
+              Expanded(
+                child: IndexedStack(index: tab, children: [
+                  TasksPage(tasks: tasks, hidden: hidden.ids, actions: actions),
+                  SendPage(store: store, onSend: send),
+                  ShopPage(coins: balance(me), purchases: purchases, onBuy: buy, onFulfill: fulfill),
+                ]),
+              ),
             ]),
       bottomNavigationBar: NavigationBar(
         selectedIndex: tab,
