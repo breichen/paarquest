@@ -36,6 +36,7 @@ class PaarQuestApp extends StatelessWidget {
     return MaterialApp(
       title: 'PaarQuest',
       debugShowCheckedModeBanner: false,
+      scaffoldMessengerKey: Push.messengerKey,
       theme: base.copyWith(textTheme: GoogleFonts.latoTextTheme(base.textTheme)),
       home: const Home(),
     );

@@ -1,7 +1,7 @@
-import 'dart:io' show Platform;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -10,6 +10,7 @@ import 'firebase_options.dart'; // wird von `flutterfire configure` erzeugt
 /// Android: echte Pushes über Firebase (auch bei geschlossener App).
 /// iOS: kein Firebase. Die App zeigt Benachrichtigungen selbst an, solange sie
 /// läuft (siehe `inApp` und die Auswertung der Live-Daten in main.dart).
+/// Web: ebenfalls ohne Firebase; Meldungen erscheinen als Banner in der App.
 class Push {
   static final _local = FlutterLocalNotificationsPlugin();
   static const _channel = AndroidNotificationChannel(
@@ -19,9 +20,15 @@ class Push {
   );
 
   /// true, wenn die App Änderungen selbst melden muss (kein FCM).
-  static bool get inApp => !Platform.isAndroid;
+  static bool get inApp => !_android;
+
+  static bool get _android => !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
+  /// Für Banner-Meldungen im Browser (in MaterialApp eingetragen).
+  static final messengerKey = GlobalKey<ScaffoldMessengerState>();
 
   static Future<void> init(String userName) async {
+    if (kIsWeb) return; // Browser: keine System-Benachrichtigungen
     try {
       await _local.initialize(const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
@@ -34,7 +41,7 @@ class Push {
       debugPrint('Lokale Benachrichtigungen fehlgeschlagen: $e');
     }
 
-    if (!Platform.isAndroid) return; // iOS: ohne Firebase weiter
+    if (!_android) return; // iOS: ohne Firebase weiter
 
     try {
       await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -63,6 +70,16 @@ class Push {
   }
 
   static Future<void> show(String title, String body) async {
+    if (kIsWeb) {
+      messengerKey.currentState
+        ?..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 6),
+          content: Text(body.isEmpty ? title : '$title\n$body'),
+        ));
+      return;
+    }
     try {
       await _local.show(
         DateTime.now().millisecondsSinceEpoch ~/ 1000,
