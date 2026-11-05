@@ -1,0 +1,26 @@
+# Hält das kostenlose Supabase-Projekt dcmyhjbhcifevisbhjav aktiv: Supabase pausiert
+# Free-Projekte nach rund einer Woche ohne Datenbankaktivität. Einmal täglich
+# wird eine Zeile gelesen; das zählt als Aktivität.
+#
+# Benötigtes Secret (Settings -> Secrets and variables -> Actions):
+#   SUPABASE_ANON_KEY = der öffentliche anon-Key aus lib/config.dart
+#   (NICHT der service_role-Key)
+name: Supabase wach halten
+on:
+  schedule:
+    - cron: "29 6 * * *"   # täglich, Uhrzeit in UTC
+  workflow_dispatch:         # zum Testen: Actions -> Run workflow
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Eine Zeile aus tasks lesen
+        env:
+          KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then echo "Secret SUPABASE_ANON_KEY fehlt"; exit 1; fi
+          curl -fsS --retry 3 --retry-delay 10 \
+            "https://dcmyhjbhcifevisbhjav.supabase.co/rest/v1/tasks?select=*&limit=1" \
+            -H "apikey: $KEY" -H "Authorization: Bearer $KEY" > /dev/null
+          echo "OK"
