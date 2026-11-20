@@ -1,4 +1,4 @@
-// Belohnungen für PaarQuest. Diese Datei wird auch von der App "Fantasien"
+// Belohnungen für „Unsere Aufträge“. Diese Datei wird auch von der App "Fantasien"
 // verwendet (dort per tool/sync_rewards.ps1 hineinkopiert). Hier ändern, nicht dort.
 import 'package:flutter/material.dart';
 

@@ -35,7 +35,7 @@ class PaarQuestApp extends StatelessWidget {
       scaffoldBackgroundColor: const Color(0xFFF4F2F7),
     );
     return MaterialApp(
-      title: 'PaarQuest',
+      title: 'Unsere Aufträge',
       debugShowCheckedModeBanner: false,
       scaffoldMessengerKey: Push.messengerKey,
       theme: base.copyWith(textTheme: GoogleFonts.latoTextTheme(base.textTheme)),

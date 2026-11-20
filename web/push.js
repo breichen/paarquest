@@ -1,4 +1,4 @@
-// Web-Push für PaarQuest (Firebase Cloud Messaging).
+// Web-Push für „Unsere Aufträge“ (Firebase Cloud Messaging).
 // Stellt window.paarquestPush bereit, das lib/web_push_web.dart aufruft.
 // Der Service Worker wird unter seinem echten Pfad neben index.html
 // angemeldet, damit das auch in einem Unterordner (/paarquest-benjamin/) klappt.

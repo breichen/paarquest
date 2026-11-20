@@ -1,5 +1,5 @@
 ﻿# Im Projektordner ausführen (nach `flutter create` und `flutter pub get`).
-# Setzt den App-Namen "PaarQuest" und erzeugt die Icons aus assets/icon/.
+# Setzt den App-Namen "Unsere Aufträge" und erzeugt die Icons aus assets/icon/.
 # Aufruf: powershell -ExecutionPolicy Bypass -File .\tool\apply_branding.ps1
 $ErrorActionPreference = 'Stop'
 $utf8 = New-Object System.Text.UTF8Encoding($false)   # UTF-8 ohne BOM
@@ -15,13 +15,13 @@ function Update-File([string]$path, [scriptblock]$change) {
 
 Update-File 'android/app/src/main/AndroidManifest.xml' {
     param($t)
-    [regex]::Replace($t, 'android:label="[^"]*"', 'android:label="PaarQuest"')
+    [regex]::Replace($t, 'android:label="[^"]*"', 'android:label="Unsere Aufträge"')
 }
 
 Update-File 'ios/Runner/Info.plist' {
     param($t)
-    $t = [regex]::Replace($t, '(<key>CFBundleDisplayName</key>\s*<string>)[^<]*', '${1}PaarQuest')
-    $t = [regex]::Replace($t, '(<key>CFBundleName</key>\s*<string>)[^<]*', '${1}PaarQuest')
+    $t = [regex]::Replace($t, '(<key>CFBundleDisplayName</key>\s*<string>)[^<]*', '${1}Unsere Aufträge')
+    $t = [regex]::Replace($t, '(<key>CFBundleName</key>\s*<string>)[^<]*', '${1}Unsere Aufträge')
     $t
 }
 
